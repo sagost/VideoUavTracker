@@ -1,0 +1,39 @@
+# This file contains metadata for your plugin. Since 
+# version 2.0 of QGIS this is the proper way to supply 
+# information about a plugin. The old method of 
+# embedding metadata in __init__.py will 
+# is no longer supported since version 2.0.
+
+# This file should be included when you package your plugin.# Mandatory items:
+
+[general]
+name=Video Uav Tracker
+qgisMinimumVersion=2.14
+description=Replay a video in sync with a gps track displayed on the map.
+version=1.5
+author=Salvatore Agosta
+email=sagost@katamail.com
+
+about=Play a georefenced video in synch with the gps track on the map. Create and manage your own mission database. Extract video frames. With Panda3D installed click directly on video to add a new point to the database. Instruction: -Use video file and .gpx file with the same lenght in seconds and rename it like 'MyVideo.mp4' and MyVideo.mp4.gpx' - If you want to see also a parallel video rename the video 'MyVideo_Parallel.mp4' -Install Panda3d runtime for enable 3D features -For 3D features load a DEM in UTM projection with a square pixel --Dependencies: Panda3D SDK , FFMPEG--  --Python dependencies: geopy, geographiclib-- --This is an experimental version, Windows not supported--
+
+tracker=https://github.com/sagost/VideoUavTracker
+repository=https://github.com/sagost/VideoUavTracker
+# End of mandatory metadata
+
+# Recommended items:
+
+# Uncomment the following line and add your changelog:
+# changelog=
+
+# Tags are comma separated with spaces allowed
+tags=database, uav, drone, video, gpx
+
+homepage=
+category=Plugins
+icon=icon.png
+# experimental flag
+experimental=True
+
+# deprecated flag (applies to the whole plugin, not just a single version)
+deprecated=False
+
