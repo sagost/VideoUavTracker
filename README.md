@@ -7,7 +7,7 @@ Video Uav Tracker   v 2.0
                             
 Replay a video in sync with a gps track displayed on the map.
 
-repository: https://github.com/sagost/VideoGis/
+repository: https://github.com/sagost/VideoUavTracker/
 
 ----
 copyright    : (C) 2017 by Salvatore Agosta
