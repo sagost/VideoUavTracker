@@ -1,0 +1,7 @@
+<RCC>
+  <qresource prefix="/plugins/VideoGis">
+    <file>iconNewTabEditorConsole.png</file>
+    <file>mIconFormSelect.svg</file>
+    <file>icon.png</file>
+  </qresource>
+</RCC>

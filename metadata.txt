@@ -1,0 +1,39 @@
+# This file contains metadata for your plugin. Since 
+# version 2.0 of QGIS this is the proper way to supply 
+# information about a plugin. The old method of 
+# embedding metadata in __init__.py will 
+# is no longer supported since version 2.0.
+
+# This file should be included when you package your plugin.# Mandatory items:
+
+[general]
+name=Video Uav Tracker
+qgisMinimumVersion=2.99
+description=Replay a video in sync with a gps track displayed on the map
+version=2.0
+author=Salvatore Agosta
+email=sagost@katamail.com
+
+about=-ATTENTION- VideoUavTracker need 'ffmpeg' and 'ffmpeg.exe' files from repository, just copy both files to /user/.qgis3/python/plugins/VideoGis/FFMPEG/. Replay a video in sync with a gps track displayed on the map and extract georeferenced frames for rapid photogrammetry use.  INSTRUCTION:  Syncing= - Create new project - Select video and .gpx track (1 trkpt per second) - Identify first couple Frame/GpsTime and select it. - Push Synchronize - Push Start       Replay: - Move on map - Create associated DB shapefile - Add POI with associated video frame saved - Extract frames with associated coordinates for rapid photogrammetry use
+
+tracker=https://github.com/sagost/VideoUavTracker/issues
+repository=https://github.com/sagost/VideoUavTracker/
+# End of mandatory metadata
+
+# Recommended items:
+
+# Uncomment the following line and add your changelog:
+# changelog=
+
+# Tags are comma separated with spaces allowed
+tags=python
+
+homepage=https://github.com/sagost/VideoGis/
+category=Plugins
+icon=icon.png
+# experimental flag
+experimental=False
+
+# deprecated flag (applies to the whole plugin, not just a single version)
+deprecated=False
+
