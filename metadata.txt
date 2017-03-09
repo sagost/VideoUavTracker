@@ -9,6 +9,7 @@
 [general]
 name=Video Uav Tracker
 qgisMinimumVersion=2.99
+qgisMaximumVersion=3.99
 description=Replay a video in sync with a gps track displayed on the map
 version=2.0
 author=Salvatore Agosta
