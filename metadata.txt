@@ -29,7 +29,7 @@ repository=https://github.com/sagost/VideoUavTracker/
 # Tags are comma separated with spaces allowed
 tags=python
 
-homepage=https://github.com/sagost/VideoGis/
+homepage=https://github.com/sagost/VideoUavTracker/
 category=Plugins
 icon=icon.png
 # experimental flag
