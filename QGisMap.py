@@ -56,61 +56,71 @@ class QGisMap(QtWidgets.QWidget, Ui_Form):
     
     def __init__(self,projectfile,MainWidget):
         QtWidgets.QMainWindow.__init__(self)
-        self.setupUi(self)
-        self.setWindowFlags(Qt.WindowStaysOnTopHint)
-        self.Main = MainWidget
-        self.projectfile = projectfile
-        with open(self.projectfile,'r') as File:
-                for line in File:
-                    if line[0:19] == 'Video file location':
-                        self.videoFile = line.split()[-1]
-                    elif line[0:23] == 'Video start at msecond:':
-                        self.fps = (1 / (float(line.split()[7]))) * 1000
-                        self.StartMsecond = int(line.split()[4])
-                    elif line[0:4] == 'DB =':
-                        DB = line.split()[-1]
-                        if DB == 'None':
-                            self.DB = None
-                        else:
-                            self.DB = DB
-                        break            
-        self.pushButton_3.setCheckable(True)
-        self.EnableMapTool = None
-        self.ExtractTool = 0
-        self.dockWidget_4.hide()
-        self.GPXList = []
-        self.positionMarker=PositionMarker(self.Main.iface.mapCanvas())               
-        self.muteButton.setIcon(
-                    self.style().standardIcon(QStyle.SP_MediaVolume))
-        self.playButton.setIcon(
-                    self.style().standardIcon(QStyle.SP_MediaPause))
-        self.player = QMediaPlayer()
-        self.player.setVideoOutput(self.video_frame)  
-        self.playButton.clicked.connect(self.PlayPause)
-        self.muteButton.clicked.connect(self.MuteUnmute)
-        self.toolButton_11.clicked.connect(self.SkipBackward)
-        self.toolButton_12.clicked.connect(self.SkipForward)
-        self.SkipBacktoolButton_8.clicked.connect(self.BackwardFrame)
-        self.SkipFortoolButton_9.clicked.connect(self.ForwardFrame)
-        self.toolButton_4.clicked.connect(self.ExtractToolbar)
-        self.toolButton_5.clicked.connect(self.close)   
-        self.pushButtonCut_2.clicked.connect(self.ExtractCommand)
-        self.pushButtonCutA_6.clicked.connect(self.ExtractFromA)
-        self.pushButtonCutB_6.clicked.connect(self.ExtractToB)
-        self.pushButton_5.clicked.connect(self.CancelVertex)  
-        self.progressBar.hide()     
-        self.Main.pushButton_2.hide()
-        self.Main.pushButton_8.hide()
-        self.Main.groupBox.show()
-        self.Main.groupBox_4.hide()
-        self.ExtractA = False
-        self.ExtractB = False
-        self.ExtractedDirectory = None 
-        self.pushButtonCut_2.setEnabled(False)
-        self.toolButton_6.setEnabled(False)
-        self.LoadGPXVideoFromPrj(self.projectfile)  
-                     
+        if os.name == 'nt':
+            ffmpeg = os.path.dirname(__file__)+'/FFMPEG/ffmpeg.exe'
+            versione = 'ffmpeg.exe'
+        else:
+            ffmpeg = os.path.dirname(__file__)+'/FFMPEG/./ffmpeg'
+            versione = 'ffmpeg'
+        if os.path.exists(ffmpeg) == True:
+            self.setupUi(self)
+            self.setWindowFlags(Qt.WindowStaysOnTopHint)
+            self.Main = MainWidget
+            self.projectfile = projectfile
+            with open(self.projectfile,'r') as File:
+                    for line in File:
+                        if line[0:19] == 'Video file location':
+                            self.videoFile = line.split()[-1]
+                        elif line[0:23] == 'Video start at msecond:':
+                            self.fps = (1 / (float(line.split()[7]))) * 1000
+                            self.StartMsecond = int(line.split()[4])
+                        elif line[0:4] == 'DB =':
+                            DB = line.split()[-1]
+                            if DB == 'None':
+                                self.DB = None
+                            else:
+                                self.DB = DB
+                            break            
+            self.pushButton_3.setCheckable(True)
+            self.EnableMapTool = None
+            self.ExtractTool = 0
+            self.dockWidget_4.hide()
+            self.GPXList = []
+            self.positionMarker=PositionMarker(self.Main.iface.mapCanvas())               
+            self.muteButton.setIcon(
+                        self.style().standardIcon(QStyle.SP_MediaVolume))
+            self.playButton.setIcon(
+                        self.style().standardIcon(QStyle.SP_MediaPause))
+            self.player = QMediaPlayer()
+            self.player.setVideoOutput(self.video_frame)  
+            self.playButton.clicked.connect(self.PlayPause)
+            self.muteButton.clicked.connect(self.MuteUnmute)
+            self.toolButton_11.clicked.connect(self.SkipBackward)
+            self.toolButton_12.clicked.connect(self.SkipForward)
+            self.SkipBacktoolButton_8.clicked.connect(self.BackwardFrame)
+            self.SkipFortoolButton_9.clicked.connect(self.ForwardFrame)
+            self.toolButton_4.clicked.connect(self.ExtractToolbar)
+            self.toolButton_5.clicked.connect(self.close)   
+            self.pushButtonCut_2.clicked.connect(self.ExtractCommand)
+            self.pushButtonCutA_6.clicked.connect(self.ExtractFromA)
+            self.pushButtonCutB_6.clicked.connect(self.ExtractToB)
+            self.pushButton_5.clicked.connect(self.CancelVertex)  
+            self.progressBar.hide()     
+            self.Main.pushButton_2.hide()
+            self.Main.pushButton_8.hide()
+            self.Main.groupBox.show()
+            self.Main.groupBox_4.hide()
+            self.ExtractA = False
+            self.ExtractB = False
+            self.ExtractedDirectory = None 
+            self.pushButtonCut_2.setEnabled(False)
+            self.toolButton_6.setEnabled(False)
+            self.LoadGPXVideoFromPrj(self.projectfile)  
+        else:
+            ret = QMessageBox.warning(self, "Warning", 'missing ffmpeg binaries, please download it from https://github.com/sagost/VideoUavTracker/blob/master/FFMPEG/'+versione+' and paste it in /.qgis3/python/plugins/Video_UAV_Tracker/FFMPEG/ ', QMessageBox.Ok)
+            self.close()        
     def LoadGPXVideoFromPrj(self,VideoGisPrj):
+        
         self.Polyline = []
         with open(VideoGisPrj,'r') as File:
             Counter = 0
@@ -163,7 +173,6 @@ class QGisMap(QtWidgets.QWidget, Ui_Form):
         self.player.positionChanged.connect(self.positionChanged)
         self.pushButton_3.clicked.connect(self.MapTool)
         self.skiptracktool = SkipTrackTool( self.Main.iface.mapCanvas(),self.GpsLayer , self)   
-        
     def AddPointTool(self):
         self.Main.iface.mapCanvas().setMapTool(self.AddPointMapTool) 
              
@@ -178,17 +187,19 @@ class QGisMap(QtWidgets.QWidget, Ui_Form):
             self.EnableMapTool = False
                            
     def closeEvent(self, *args, **kwargs):
-        self.player.stop()
-        self.Main.iface.mapCanvas().scene().removeItem(self.positionMarker)
-        self.CancelVertex()
-        self.Main.pushButton_2.show()
-        #self.Main.horizontalSpacer_2.show()
-        self.Main.groupBox.hide()
-        self.Main.pushButton_8.show()
-        self.Main.groupBox_4.show()
-        self.dockWidget_2.close()
-        return QtWidgets.QWidget.closeEvent(self, *args, **kwargs)
-                               
+        try:
+            self.player.stop()
+            self.Main.iface.mapCanvas().scene().removeItem(self.positionMarker)
+            self.CancelVertex()
+            self.Main.pushButton_2.show()
+            #self.Main.horizontalSpacer_2.show()
+            self.Main.groupBox.hide()
+            self.Main.pushButton_8.show()
+            self.Main.groupBox_4.show()
+            self.dockWidget_2.close()
+        except:
+            pass
+        return QtWidgets.QWidget.closeEvent(self, *args, **kwargs)                      
     def mediaStateChanged(self, state):
         if self.player.state() == QMediaPlayer.PlayingState:
             self.playButton.setIcon(
