@@ -163,21 +163,30 @@ class NewProject(QtWidgets.QWidget, Ui_NewProject):
         self.close()
          
     def SelectVideoGPX(self):
-        self.comboBox.clear()
-        if self.player.state() == QMediaPlayer.PlayingState:
-            self.player.pause()    
-        self.videofile = None
-        self.GPXfile = None
-        options = QFileDialog.Options()
-        options |= QFileDialog.DontUseNativeDialog
-        self.videofile, _ = QFileDialog.getOpenFileName(self,"Select Video File", "","All Files (*);;Video File (*.mp4 *.avi *.ogv)", options=options)
-        if self.videofile:        
-            self.GPXfile, _ = QFileDialog.getOpenFileName(self,"Select GPX file", "","All Files (*);;Video File (*.gpx)", options=options)
-            if self.GPXfile:
-                self.ParseGpx(self.GPXfile)
-                self.LoadVideo(self.videofile)
-                self.replayPosition_label.setText( "-:- / -:-")
-
+        if os.name == 'nt':
+            ffmpeg = os.path.dirname(__file__)+'/FFMPEG/ffmpeg.exe'
+            versione = 'ffmpeg.exe'
+        else:
+            ffmpeg = os.path.dirname(__file__)+'/FFMPEG/./ffmpeg'
+            versione = 'ffmpeg'
+        if os.path.exists(ffmpeg) == True:
+            self.comboBox.clear()
+            if self.player.state() == QMediaPlayer.PlayingState:
+                self.player.pause()    
+            self.videofile = None
+            self.GPXfile = None
+            options = QFileDialog.Options()
+            options |= QFileDialog.DontUseNativeDialog
+            self.videofile, _ = QFileDialog.getOpenFileName(self,"Select Video File", "","All Files (*);;Video File (*.mp4 *.avi *.ogv)", options=options)
+            if self.videofile:        
+                self.GPXfile, _ = QFileDialog.getOpenFileName(self,"Select GPX file", "","All Files (*);;Video File (*.gpx)", options=options)
+                if self.GPXfile:
+                    self.ParseGpx(self.GPXfile)
+                    self.LoadVideo(self.videofile)
+                    self.replayPosition_label.setText( "-:- / -:-")
+        else:
+            ret = QMessageBox.warning(self, "Warning", 'missing ffmpeg binaries, please download it from https://github.com/sagost/VideoUavTracker/blob/master/FFMPEG/'+versione+' and paste it in /.qgis3/python/plugins/Video_UAV_Tracker/FFMPEG/ ', QMessageBox.Ok)
+            self.close()
     def ParseGpx(self,GPXfile):
         gpx = parse(GPXfile)
         track = gpx.getElementsByTagName("trkpt")
@@ -293,7 +302,6 @@ class NewProject(QtWidgets.QWidget, Ui_NewProject):
                     dopo = linea.find('fps')
                     fps = float(linea[0:dopo])
                     return fps
-            
         else:
             tmpf = tempfile.NamedTemporaryFile()
             ffmpeg = os.path.dirname(__file__)+'/FFMPEG/./ffmpeg'
