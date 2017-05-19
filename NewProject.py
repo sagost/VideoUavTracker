@@ -163,21 +163,31 @@ class NewProject(QtWidgets.QWidget, Ui_NewProject):
         self.close()
          
     def SelectVideoGPX(self):
-        self.comboBox.clear()
-        if self.player.state() == QMediaPlayer.PlayingState:
-            self.player.pause()    
-        self.videofile = None
-        self.GPXfile = None
-        options = QFileDialog.Options()
-        options |= QFileDialog.DontUseNativeDialog
-        self.videofile, _ = QFileDialog.getOpenFileName(self,"Select Video File", "","All Files (*);;Video File (*.mp4 *.avi *.ogv)", options=options)
-        if self.videofile:        
-            self.GPXfile, _ = QFileDialog.getOpenFileName(self,"Select GPX file", "","All Files (*);;Video File (*.gpx)", options=options)
-            if self.GPXfile:
-                self.ParseGpx(self.GPXfile)
-                self.LoadVideo(self.videofile)
-                self.replayPosition_label.setText( "-:- / -:-")
-
+        if os.name == 'nt':
+            ffmpeg = os.path.dirname(__file__)+'/FFMPEG/ffmpeg.exe'
+            versione = 'ffmpeg.exe'
+        else:
+            ffmpeg = os.path.dirname(__file__)+'/FFMPEG/./ffmpeg'
+            versione = 'ffmpeg'
+        if os.path.exists(ffmpeg) == True:
+            self.comboBox.clear()
+            if self.player.state() == QMediaPlayer.PlayingState:
+                self.player.pause()    
+            self.videofile = None
+            self.GPXfile = None
+            options = QFileDialog.Options()
+            options |= QFileDialog.DontUseNativeDialog
+            self.videofile, _ = QFileDialog.getOpenFileName(self,"Select Video File", "","All Files (*);;Video File (*.mp4 *.avi *.ogv)", options=options)
+            if self.videofile:        
+                self.GPXfile, _ = QFileDialog.getOpenFileName(self,"Select GPX file", "","All Files (*);;Video File (*.gpx)", options=options)
+                if self.GPXfile:
+                    self.ParseGpx(self.GPXfile)
+                    self.LoadVideo(self.videofile)
+                    self.replayPosition_label.setText( "-:- / -:-")
+        else:
+            ret = QMessageBox.warning(self, "Warning", 'missing ffmpeg binaries, please download it from https://github.com/sagost/VideoUavTracker/blob/master/FFMPEG/'+versione+' and paste it in /.qgis3/python/plugins/Video_UAV_Tracker/FFMPEG/ ', QMessageBox.Ok)
+            self.close()
+            
     def ParseGpx(self,GPXfile):
         gpx = parse(GPXfile)
         track = gpx.getElementsByTagName("trkpt")
@@ -185,33 +195,34 @@ class NewProject(QtWidgets.QWidget, Ui_NewProject):
         Error = 0
         GpxProgressiveNumber = 0
         for name in track:
-            Point = []
+            dict = {'Lat': 0, 'Lon': 0, 'Ele': 0, 'Time':0}
+
             a = (name.toprettyxml(indent = '') ).split()
             for x in a:
                 if x.find('lat') == 0:
                     lat = float(x.split('"')[1])
-                    Point.append(float(x.split('"')[1]))
+                    dict['Lat'] = float(x.split('"')[1])    
                 elif x.find('lon') == 0:
                     lon = float(x.split('"')[1])
-                    Point.append(float(x.split('"')[1]))
+                    dict['Lon'] = float(x.split('"')[1])    
                 elif x.find('<ele>') == 0:
-                    Point.append(float(x[5:-6]))    
+                    dict['Ele'] = float(x[5:-6])   
                 elif x.find('<time>') == 0:
                     try:
                         gpxtime = time.strftime('%Y-%m-%dT%H:%M:%S.%fZ',time.strptime(x[6:-7], '%Y-%m-%dT%H:%M:%S.%fZ'))
-                        Point.append(x[6:-7])
+                        dict['Time']= x[6:-7]
                     except ValueError:
                         try:
                             gpxtime = time.strftime('%Y-%m-%dT%H:%M:%SZ',time.strptime(x[6:-7],'%Y-%m-%dT%H:%M:%SZ'))
-                            Point.append(x[6:-7])
+                            dict['Time']= x[6:-7]
                         except ValueError:
                             try:
-                                gpxtime = time.strftime('%Y-%m-%dT%H.%M.%S',time.strptime(x[6:-7],'%Y-%m-%dT%H.%M.%S'))
-                                Point.append(x[6:-7])                
+                                gpxtime = time.strftime('%Y-%m-%dT%H.%M.%S',time.strptime(x[6:-7],'%Y-%m-%dT%H.%M.%S')) 
+                                dict['Time']= x[6:-7]               
                             except ValueError:
                                 try:
                                     gpxtime = time.strftime('%Y-%m-%dT%H.%M.%S',time.strptime(x[6:-13],'%Y-%m-%dT%H.%M.%S'))
-                                    Point.append(x[6:-7]) 
+                                    dict['Time']= x[6:-7] 
                                 except ValueError:
                                     try:
                                         gpxtime = time.strftime('%Y-%m-%dT%H.%M.%S',time.strptime(x[6:-13],'%Y-%m-%dT%H:%M:%S'))
@@ -219,13 +230,14 @@ class NewProject(QtWidgets.QWidget, Ui_NewProject):
                                     except ValueError:
                                         Error = 1
                                         FormatoErrore = str(x)
+            Point = [dict['Lat'],dict['Lon'],dict['Ele'],dict['Time']]
             self.comboBox.addItem(str(GpxProgressiveNumber) + '-'+ gpxtime )    
             GPXList.append([GpxProgressiveNumber,Point])
             GpxProgressiveNumber = GpxProgressiveNumber + 1   
         if Error == 0:
             self.GPXList = GPXList
         else:
-            ret = QMessageBox.warning(self, "Warning", FormatoErrore +'  UNKOWN GPX TIME FORMAT - ABORTED', QMessageBox.Ok)
+            ret = QMessageBox.warning(self, "Warning", FormatoErrore +'  UNKOWN GPX TIME FORMAT - ABORTED', QMessageBox.Ok)  
             self.close
         
     def LoadVideo(self,videofile):
@@ -293,7 +305,6 @@ class NewProject(QtWidgets.QWidget, Ui_NewProject):
                     dopo = linea.find('fps')
                     fps = float(linea[0:dopo])
                     return fps
-            
         else:
             tmpf = tempfile.NamedTemporaryFile()
             ffmpeg = os.path.dirname(__file__)+'/FFMPEG/./ffmpeg'
