@@ -222,11 +222,11 @@ class NewProject(QtWidgets.QWidget, Ui_NewProject):
                             except ValueError:
                                 try:
                                     gpxtime = time.strftime('%Y-%m-%dT%H.%M.%S',time.strptime(x[6:-13],'%Y-%m-%dT%H.%M.%S'))
-                                    dict['Time']= x[6:-7] 
+                                    dict['Time']= x[6:-13] 
                                 except ValueError:
                                     try:
                                         gpxtime = time.strftime('%Y-%m-%dT%H.%M.%S',time.strptime(x[6:-13],'%Y-%m-%dT%H:%M:%S'))
-                                        Point.append(x[6:-7]) 
+                                        dict['Time']= x[6:-13] 
                                     except ValueError:
                                         Error = 1
                                         FormatoErrore = str(x)
