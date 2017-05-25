@@ -56,61 +56,71 @@ class QGisMap(QtWidgets.QWidget, Ui_Form):
     
     def __init__(self,projectfile,MainWidget):
         QtWidgets.QMainWindow.__init__(self)
-        self.setupUi(self)
-        self.setWindowFlags(Qt.WindowStaysOnTopHint)
-        self.Main = MainWidget
-        self.projectfile = projectfile
-        with open(self.projectfile,'r') as File:
-                for line in File:
-                    if line[0:19] == 'Video file location':
-                        self.videoFile = line.split()[-1]
-                    elif line[0:23] == 'Video start at msecond:':
-                        self.fps = (1 / (float(line.split()[7]))) * 1000
-                        self.StartMsecond = int(line.split()[4])
-                    elif line[0:4] == 'DB =':
-                        DB = line.split()[-1]
-                        if DB == 'None':
-                            self.DB = None
-                        else:
-                            self.DB = DB
-                        break            
-        self.pushButton_3.setCheckable(True)
-        self.EnableMapTool = None
-        self.ExtractTool = 0
-        self.dockWidget_4.hide()
-        self.GPXList = []
-        self.positionMarker=PositionMarker(self.Main.iface.mapCanvas())               
-        self.muteButton.setIcon(
-                    self.style().standardIcon(QStyle.SP_MediaVolume))
-        self.playButton.setIcon(
-                    self.style().standardIcon(QStyle.SP_MediaPause))
-        self.player = QMediaPlayer()
-        self.player.setVideoOutput(self.video_frame)  
-        self.playButton.clicked.connect(self.PlayPause)
-        self.muteButton.clicked.connect(self.MuteUnmute)
-        self.toolButton_11.clicked.connect(self.SkipBackward)
-        self.toolButton_12.clicked.connect(self.SkipForward)
-        self.SkipBacktoolButton_8.clicked.connect(self.BackwardFrame)
-        self.SkipFortoolButton_9.clicked.connect(self.ForwardFrame)
-        self.toolButton_4.clicked.connect(self.ExtractToolbar)
-        self.toolButton_5.clicked.connect(self.close)   
-        self.pushButtonCut_2.clicked.connect(self.ExtractCommand)
-        self.pushButtonCutA_6.clicked.connect(self.ExtractFromA)
-        self.pushButtonCutB_6.clicked.connect(self.ExtractToB)
-        self.pushButton_5.clicked.connect(self.CancelVertex)  
-        self.progressBar.hide()     
-        self.Main.pushButton_2.hide()
-        self.Main.pushButton_8.hide()
-        self.Main.groupBox.show()
-        self.Main.groupBox_4.hide()
-        self.ExtractA = False
-        self.ExtractB = False
-        self.ExtractedDirectory = None 
-        self.pushButtonCut_2.setEnabled(False)
-        self.toolButton_6.setEnabled(False)
-        self.LoadGPXVideoFromPrj(self.projectfile)  
-                     
+        if os.name == 'nt':
+            ffmpeg = os.path.dirname(__file__)[0:-18]+'/Video_UAV_Tracker/FFMPEG/ffmpeg.exe'
+            versione = 'ffmpeg.exe'
+        else:
+            ffmpeg = os.path.dirname(__file__)+'/FFMPEG/./ffmpeg'
+            versione = 'ffmpeg'
+        if os.path.exists(ffmpeg) == True:
+            self.setupUi(self)
+            self.setWindowFlags(Qt.WindowStaysOnTopHint)
+            self.Main = MainWidget
+            self.projectfile = projectfile
+            with open(self.projectfile,'r') as File:
+                    for line in File:
+                        if line[0:19] == 'Video file location':
+                            self.videoFile = line.split('=')[-1][1:-1]
+                        elif line[0:23] == 'Video start at msecond:':
+                            self.fps = (1 / (float(line.split()[7]))) * 1000
+                            self.StartMsecond = int(line.split()[4])
+                        elif line[0:4] == 'DB =':
+                            DB = line.split('=')[-1][1:-1]
+                            if DB == 'None':
+                                self.DB = None
+                            else:
+                                self.DB = DB
+                            break            
+            self.pushButton_3.setCheckable(True)
+            self.EnableMapTool = None
+            self.ExtractTool = 0
+            self.dockWidget_4.hide()
+            self.GPXList = []
+            self.positionMarker=PositionMarker(self.Main.iface.mapCanvas())               
+            self.muteButton.setIcon(
+                        self.style().standardIcon(QStyle.SP_MediaVolume))
+            self.playButton.setIcon(
+                        self.style().standardIcon(QStyle.SP_MediaPause))
+            self.player = QMediaPlayer()
+            self.player.setVideoOutput(self.video_frame)  
+            self.playButton.clicked.connect(self.PlayPause)
+            self.muteButton.clicked.connect(self.MuteUnmute)
+            self.toolButton_11.clicked.connect(self.SkipBackward)
+            self.toolButton_12.clicked.connect(self.SkipForward)
+            self.SkipBacktoolButton_8.clicked.connect(self.BackwardFrame)
+            self.SkipFortoolButton_9.clicked.connect(self.ForwardFrame)
+            self.toolButton_4.clicked.connect(self.ExtractToolbar)
+            self.toolButton_5.clicked.connect(self.close)   
+            self.pushButtonCut_2.clicked.connect(self.ExtractCommand)
+            self.pushButtonCutA_6.clicked.connect(self.ExtractFromA)
+            self.pushButtonCutB_6.clicked.connect(self.ExtractToB)
+            self.pushButton_5.clicked.connect(self.CancelVertex)  
+            self.progressBar.hide()     
+            self.Main.pushButton_2.hide()
+            self.Main.pushButton_8.hide()
+            self.Main.groupBox.show()
+            self.Main.groupBox_4.hide()
+            self.ExtractA = False
+            self.ExtractB = False
+            self.ExtractedDirectory = None 
+            self.pushButtonCut_2.setEnabled(False)
+            self.toolButton_6.setEnabled(False)
+            self.LoadGPXVideoFromPrj(self.projectfile)  
+        else:
+            ret = QMessageBox.warning(self, "Warning", 'missing ffmpeg binaries, please download it from https://github.com/sagost/VideoUavTracker/blob/master/FFMPEG/'+versione+' and paste it in /.qgis3/python/plugins/Video_UAV_Tracker/FFMPEG/ ', QMessageBox.Ok)
+            self.close()        
     def LoadGPXVideoFromPrj(self,VideoGisPrj):
+        
         self.Polyline = []
         with open(VideoGisPrj,'r') as File:
             Counter = 0
@@ -163,7 +173,6 @@ class QGisMap(QtWidgets.QWidget, Ui_Form):
         self.player.positionChanged.connect(self.positionChanged)
         self.pushButton_3.clicked.connect(self.MapTool)
         self.skiptracktool = SkipTrackTool( self.Main.iface.mapCanvas(),self.GpsLayer , self)   
-        
     def AddPointTool(self):
         self.Main.iface.mapCanvas().setMapTool(self.AddPointMapTool) 
              
@@ -178,17 +187,19 @@ class QGisMap(QtWidgets.QWidget, Ui_Form):
             self.EnableMapTool = False
                            
     def closeEvent(self, *args, **kwargs):
-        self.player.stop()
-        self.Main.iface.mapCanvas().scene().removeItem(self.positionMarker)
-        self.CancelVertex()
-        self.Main.pushButton_2.show()
-        #self.Main.horizontalSpacer_2.show()
-        self.Main.groupBox.hide()
-        self.Main.pushButton_8.show()
-        self.Main.groupBox_4.show()
-        self.dockWidget_2.close()
-        return QtWidgets.QWidget.closeEvent(self, *args, **kwargs)
-                               
+        try:
+            self.player.stop()
+            self.Main.iface.mapCanvas().scene().removeItem(self.positionMarker)
+            self.CancelVertex()
+            self.Main.pushButton_2.show()
+            #self.Main.horizontalSpacer_2.show()
+            self.Main.groupBox.hide()
+            self.Main.pushButton_8.show()
+            self.Main.groupBox_4.show()
+            self.dockWidget_2.close()
+        except:
+            pass
+        return QtWidgets.QWidget.closeEvent(self, *args, **kwargs)                      
     def mediaStateChanged(self, state):
         if self.player.state() == QMediaPlayer.PlayingState:
             self.playButton.setIcon(
@@ -307,10 +318,11 @@ class QGisMap(QtWidgets.QWidget, Ui_Form):
         
     def ExtractSingleFrameOnTime(self, pos, outputfile):
         if os.name == 'nt':
-            ffmpeg = os.path.dirname(__file__)+'/FFMPEG/ffmpeg.exe'
+            ffmpeg = ('"'+os.path.dirname(__file__)[0:-18]+'/Video_UAV_Tracker/FFMPEG/ffmpeg.exe'+'"')
+            os.popen(str(ffmpeg)+' -ss '+str(pos/1000)+' -i '+str('"' +self.videoFile+ '"')+ ' -t 1 '+str('"'+outputfile+'"'))
         else:
             ffmpeg = os.path.dirname(__file__)+'/FFMPEG/./ffmpeg'
-        os.system(str(ffmpeg)+' -ss '+str(pos/1000)+' -i '+str(self.videoFile)+' -t 1 '+str(outputfile))
+            os.system(str(ffmpeg)+' -ss '+str(pos/1000)+' -i '+str(self.videoFile)+' -t 1 '+str(outputfile))
                  
     def AddPoint(self,x,y):
         self.Main.iface.mapCanvas().unsetMapTool(self.AddPointMapTool)
@@ -366,7 +378,7 @@ class QGisMap(QtWidgets.QWidget, Ui_Form):
         feature.setGeometry(QgsGeometry.fromPoint(Point))
         feature.setAttributes(attributes)
         self.DBLayer.startEditing()
-        self.DBLayer.addFeature(feature, True)
+        self.DBLayer.addFeature(feature)
         self.DBLayer.commitChanges()    
         self.DBLayer.triggerRepaint()
 
@@ -376,9 +388,9 @@ class QGisMap(QtWidgets.QWidget, Ui_Form):
             self.CancelVertex()
         else:
             if os.name == 'nt':
-                ffmpeg = os.path.dirname(__file__)+'/FFMPEG/ffmpeg.exe'
+                ffmpeg = '"'+os.path.dirname(__file__)[0:-18]+'/Video_UAV_Tracker/FFMPEG/ffmpeg.exe'+'"'
             else:
-                ffmpeg = os.path.dirname(__file__)+'/FFMPEG/./ffmpeg'     
+                ffmpeg = os.path.dirname(__file__)+'/FFMPEG/./ffmpeg'
             Directory,_ = QFileDialog.getSaveFileName(caption= 'Save georeferenced images')
             if Directory:
                 self.progressBar.show()
@@ -390,8 +402,12 @@ class QGisMap(QtWidgets.QWidget, Ui_Form):
                     if fps < 1.0:
                         fps = 1.0 / fps
                     elif fps > 1:
-                        fps = 1.0 / fps           
-                    os.system(ffmpeg+' -ss '+ str(start) + ' -i '+ str(self.videoFile) + ' -t ' + str(finish) + ' -vf fps=' + str(fps) + ' ' + Directory + '_%d.png')
+                        fps = 1.0 / fps
+                        
+                    if os.name == 'nt':
+                        os.popen(str(ffmpeg+ ' -ss ' + str(start) + ' -i '+ str('"'+self.videoFile+'"')+ ' -t ' + str(finish) + ' -vf fps=' + str(fps) + ' ' + '"'+Directory + '_%d.png'+'"'))
+                    else:
+                        os.system(ffmpeg+' -ss '+ str(start) + ' -i '+ str(self.videoFile) + ' -t ' + str(finish) + ' -vf fps=' + str(fps) + ' ' + Directory + '_%d.png')
                 else:
                     txtGPSFile = open(Directory + 'UTM_Coordinates.txt', 'w')
                     txtGPSFile.close()
@@ -401,7 +417,10 @@ class QGisMap(QtWidgets.QWidget, Ui_Form):
                     meters = self.doubleSpinBox_2.value()
                     Timerange = range(start, finish + 1)
                     RemainToUseMeterTotal = 0
-                    os.system(ffmpeg+' -ss '+ str(start) + ' -i '+ str(self.videoFile) + ' -frames:v 1 ' + Directory + '_sec_' + str(start)+'.00.png')
+                    if os.name == 'nt':
+                        os.popen(ffmpeg+' -ss '+ str(start) + ' -i '+ str('"'+self.videoFile+'"') + ' -frames:v 1 ' + '"'+Directory + '_sec_' + str(start)+'.00.png'+'"')
+                    else:
+                        os.system(ffmpeg+' -ss '+ str(start) + ' -i '+ str(self.videoFile) + ' -frames:v 1 ' + Directory + '_sec_' + str(start)+'.00.png')
                     lonUTM, latUTM,quotainutile = self.transform_wgs84_to_utm(float(self.GPXList[start][1]) , float(self.GPXList[start][0]))
                     ele = float(self.GPXList[start][2])
                     txtGPSFile.write(str(Directory.split('/')[-1]) + '_sec_' + str(start)+'.00.png,'+' '+ str(lonUTM) + ', '+ str(latUTM) + ', ' + str(ele) + '\n')
@@ -421,8 +440,13 @@ class QGisMap(QtWidgets.QWidget, Ui_Form):
                             if DistanceBetweenPoint >= meters:
                                 decimalSecondToAdd = meters / DistanceBetweenPoint
                                 RemainToUseMeter = DistanceBetweenPoint - meters
-                                os.system(ffmpeg+ ' -ss '+ str(i + decimalSecondToAdd) + 
-                                          ' -i '+ str(self.videoFile) + ' -frames:v 1 ' + Directory + '_sec_' + str(i) + str(decimalSecondToAdd)[1:4] +'.png')
+                                if os.name == 'nt':
+                                    os.popen(ffmpeg+ ' -ss '+ str(i + decimalSecondToAdd) +
+                                             ' -i '+ str('"'+self.videoFile+'"') + ' -frames:v 1 ' +'"'+ Directory + '_sec_' + str(i) + str(decimalSecondToAdd)[1:4] +'.png'+'"')
+                                else:
+                                    os.system(ffmpeg+ ' -ss '+ str(i + decimalSecondToAdd) +
+                                              ' -i '+ str(self.videoFile) + ' -frames:v 1 ' + Directory + '_sec_' + str(i) + str(decimalSecondToAdd)[1:4] +'.png')
+                                    
                                 X = lonUTM1 + decimalSecondToAdd*(lonUTM2 - lonUTM1)
                                 Y = latUTM1 + decimalSecondToAdd*(latUTM2 - latUTM1)
                                 Z = ele1 + decimalSecondToAdd*(ele2 - ele1)
@@ -431,8 +455,13 @@ class QGisMap(QtWidgets.QWidget, Ui_Form):
                                     decimalSecondToAddMore = meters / SpeedMeterSecond
                                     RemainToUseMeter = RemainToUseMeter - meters
                                     decimalSecondToAdd = decimalSecondToAdd + decimalSecondToAddMore
-                                    os.system(ffmpeg+ ' -ss '+ str(i + decimalSecondToAdd) + 
-                                          ' -i '+ str(self.videoFile) + ' -frames:v 1 ' + Directory + '_sec_' + str(i) + str(decimalSecondToAdd)[1:4] +'.png')
+                                    if os.name == 'nt':
+                                        os.popen(ffmpeg+ ' -ss '+ str(i + decimalSecondToAdd) +
+                                                 ' -i '+ str('"'+self.videoFile+'"') + ' -frames:v 1 ' +'"'+ Directory + '_sec_' + str(i) + str(decimalSecondToAdd)[1:4] +'.png'+'"')
+                                    else:
+                                        os.system(ffmpeg+ ' -ss '+ str(i + decimalSecondToAdd) +
+                                                  ' -i '+ str(self.videoFile) + ' -frames:v 1 ' + Directory + '_sec_' + str(i) + str(decimalSecondToAdd)[1:4] +'.png')
+                                    
                                     X = lonUTM1 + decimalSecondToAdd*(lonUTM2 - lonUTM1)
                                     Y = latUTM1 + decimalSecondToAdd*(latUTM2 - latUTM1)
                                     Z = ele1 + decimalSecondToAdd*(ele2 - ele1)
@@ -441,8 +470,13 @@ class QGisMap(QtWidgets.QWidget, Ui_Form):
                                     decimalSecondToAddMore = meters / SpeedMeterSecond
                                     RemainToUseMeter = RemainToUseMeter - meters
                                     decimalSecondToAdd = decimalSecondToAdd + decimalSecondToAddMore
-                                    os.system(ffmpeg+ ' -ss '+ str(i + decimalSecondToAdd) + 
-                                          ' -i '+ str(self.videoFile) + ' -frames:v 1 ' + Directory + '_sec_' + str(i) + str(decimalSecondToAdd)[1:4] +'.png')
+                                    if os.name == 'nt':
+                                        os.popen(ffmpeg+ ' -ss '+ str(i + decimalSecondToAdd) +
+                                                 ' -i '+ str('"'+self.videoFile+'"') + ' -frames:v 1 ' +'"'+ Directory + '_sec_' + str(i) + str(decimalSecondToAdd)[1:4] +'.png'+'"')
+                                    else:
+                                        os.system(ffmpeg+ ' -ss '+ str(i + decimalSecondToAdd) +
+                                                  ' -i '+ str(self.videoFile) + ' -frames:v 1 ' + Directory + '_sec_' + str(i) + str(decimalSecondToAdd)[1:4] +'.png')
+                                    
                                     X = lonUTM1 + decimalSecondToAdd*(lonUTM2 - lonUTM1)
                                     Y = latUTM1 + decimalSecondToAdd*(latUTM2 - latUTM1)
                                     Z = ele1 + decimalSecondToAdd*(ele2 - ele1)
@@ -457,8 +491,13 @@ class QGisMap(QtWidgets.QWidget, Ui_Form):
                             if DistanceBetweenPoint >= (meters - RemainToUseMeterTotal) :
                                 decimalSecondToAdd = (meters - RemainToUseMeterTotal) / DistanceBetweenPoint
                                 RemainToUseMeter = DistanceBetweenPoint - (meters - RemainToUseMeterTotal)
-                                os.system(ffmpeg+ ' -ss '+ str(i + decimalSecondToAdd) + 
-                                          ' -i '+ str(self.videoFile) + ' -frames:v 1 ' + Directory + '_sec_' + str(i) + str(decimalSecondToAdd)[1:4] +'.png')
+                                if os.name == 'nt':
+                                    os.popen(ffmpeg+ ' -ss '+ str(i + decimalSecondToAdd) +
+                                             ' -i '+ str('"'+self.videoFile+'"') + ' -frames:v 1 ' +'"'+ Directory + '_sec_' + str(i) + str(decimalSecondToAdd)[1:4] +'.png'+'"')
+                                else:
+                                    os.system(ffmpeg+ ' -ss '+ str(i + decimalSecondToAdd) +
+                                              ' -i '+ str(self.videoFile) + ' -frames:v 1 ' + Directory + '_sec_' + str(i) + str(decimalSecondToAdd)[1:4] +'.png')
+                                    
                                 X = lonUTM1 + decimalSecondToAdd*(lonUTM2 - lonUTM1)
                                 Y = latUTM1 + decimalSecondToAdd*(latUTM2 - latUTM1)
                                 Z = ele1 + decimalSecondToAdd*(ele2 - ele1)
@@ -467,8 +506,13 @@ class QGisMap(QtWidgets.QWidget, Ui_Form):
                                     decimalSecondToAddMore = meters / SpeedMeterSecond
                                     RemainToUseMeter = RemainToUseMeter - meters
                                     decimalSecondToAdd = decimalSecondToAdd + decimalSecondToAddMore
-                                    os.system(ffmpeg+ ' -ss '+ str(i + decimalSecondToAdd) + 
-                                          ' -i '+ str(self.videoFile) + ' -frames:v 1 ' + Directory + '_sec_' + str(i) + str(decimalSecondToAdd)[1:4] +'.png')
+                                    if os.name == 'nt':
+                                        os.popen(ffmpeg+ ' -ss '+ str(i + decimalSecondToAdd) +
+                                                 ' -i '+ str('"'+self.videoFile+'"') + ' -frames:v 1 ' +'"'+ Directory + '_sec_' + str(i) + str(decimalSecondToAdd)[1:4] +'.png'+'"')
+                                    else:
+                                        os.system(ffmpeg+ ' -ss '+ str(i + decimalSecondToAdd) +
+                                                  ' -i '+ str(self.videoFile) + ' -frames:v 1 ' + Directory + '_sec_' + str(i) + str(decimalSecondToAdd)[1:4] +'.png')
+                
                                     X = lonUTM1 + decimalSecondToAdd*(lonUTM2 - lonUTM1)
                                     Y = latUTM1 + decimalSecondToAdd*(latUTM2 - latUTM1)
                                     Z = ele1 + decimalSecondToAdd*(ele2 - ele1)
@@ -477,8 +521,13 @@ class QGisMap(QtWidgets.QWidget, Ui_Form):
                                     decimalSecondToAddMore = meters / SpeedMeterSecond
                                     RemainToUseMeter = RemainToUseMeter - meters
                                     decimalSecondToAdd = decimalSecondToAdd + decimalSecondToAddMore
-                                    os.system(ffmpeg+ ' -ss '+ str(i + decimalSecondToAdd) + 
-                                          ' -i '+ str(self.videoFile) + ' -frames:v 1 ' + Directory + '_sec_' + str(i) + str(decimalSecondToAdd)[1:4] +'.png')
+                                    if os.name == 'nt':
+                                        os.popen(ffmpeg+ ' -ss '+ str(i + decimalSecondToAdd) +
+                                                 ' -i '+ str('"'+self.videoFile+'"') + ' -frames:v 1 ' +'"'+ Directory + '_sec_' + str(i) + str(decimalSecondToAdd)[1:4] +'.png'+'"')
+                                    else:
+                                        os.system(ffmpeg+ ' -ss '+ str(i + decimalSecondToAdd) +
+                                                  ' -i '+ str(self.videoFile) + ' -frames:v 1 ' + Directory + '_sec_' + str(i) + str(decimalSecondToAdd)[1:4] +'.png')
+                                    
                                     X = lonUTM1 + decimalSecondToAdd*(lonUTM2 - lonUTM1)
                                     Y = latUTM1 + decimalSecondToAdd*(latUTM2 - latUTM1)
                                     Z = ele1 + decimalSecondToAdd*(ele2 - ele1)
