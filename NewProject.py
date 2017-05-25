@@ -159,7 +159,9 @@ class NewProject(QtWidgets.QWidget, Ui_NewProject):
                 Counter = Counter + 1   
             outputFile.write(str(ActualLatitude)+' '+str(ActualLongitude)+' '+str(Ele)+' '+str(Speed)+' '+str(Course)+' '+str(Time)+'\n')    
         outputFile.close() 
-        self.Main.LoadProjFromNew(self.projectfile)   
+        self.Main.LoadProjFromNew(self.projectfile)
+        if os.name == 'nt':
+            os.remove (self.tmp)
         self.close()
          
     def SelectVideoGPX(self):
@@ -226,7 +228,7 @@ class NewProject(QtWidgets.QWidget, Ui_NewProject):
                                 except ValueError:
                                     try:
                                         gpxtime = time.strftime('%Y-%m-%dT%H.%M.%S',time.strptime(x[6:-13],'%Y-%m-%dT%H:%M:%S'))
-                                        dict['Time']= x[6:-13] 
+                                        dict['Time']= x[6:-13]
                                     except ValueError:
                                         Error = 1
                                         FormatoErrore = str(x)
@@ -241,8 +243,10 @@ class NewProject(QtWidgets.QWidget, Ui_NewProject):
             self.close
         
     def LoadVideo(self,videofile):
-        self.RealFps = float(self.getVideoDetails(str(videofile)))
+        fps = self.getVideoDetails(str(videofile))
+        self.RealFps = float(fps)
         self.fps = (1 / self.RealFps )*1000
+        print(str(self.videofile))
         url = QUrl.fromLocalFile(str(self.videofile))
         mc = QMediaContent(url)
         self.player.setMedia(mc)
@@ -289,21 +293,25 @@ class NewProject(QtWidgets.QWidget, Ui_NewProject):
     def getVideoDetails(self,filepath):
         
         if os.name == 'nt':
-            tmp = os.path.dirname(__file__)+'tmp'
+            tmp = os.path.dirname(__file__)[0:-18]+'/Video_UAV_Tracker/tmp'
+            tmp2 = '"'+tmp+'"'
+            filepath2 = '"'+filepath+'"'
             a = open(tmp,'w')
             a.close()
-            ffmpeg = os.path.dirname(__file__)+'/FFMPEG/ffmpeg.exe'
-            os.system(str(ffmpeg)+" -i \"%s\" 2> %s" % (filepath, tmp))
+            ffmpeg = '"'+os.path.dirname(__file__)[0:-18]+'/Video_UAV_Tracker/FFMPEG/ffmpeg.exe'+'"'
+            a = os.popen(str(ffmpeg + ' -i '+filepath2+' 2> '+tmp2))
+            while os.stat(tmp).st_size < 1500:
+                pass
             a = open(tmp,'r')
             lines = a.readlines()
             a.close()
-            os.remove(tmp)
             for l in lines:
                 l = l.strip()
                 if str(l).startswith("Stream #0:0"):
                     linea = str(l).split(',')[-4]
                     dopo = linea.find('fps')
                     fps = float(linea[0:dopo])
+                    self.tmp = tmp
                     return fps
         else:
             tmpf = tempfile.NamedTemporaryFile()
