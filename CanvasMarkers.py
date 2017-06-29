@@ -52,7 +52,7 @@ class PositionMarker(QgsMapCanvasItem):
 		
 	def newCoords(self, pos):
 		if self.pos != pos:
-			self.pos = QgsPoint(pos) # copy
+			self.pos = QgsPointXY(pos) # copy
 			self.updatePosition()
 			
 	def setHasPosition(self, has):
