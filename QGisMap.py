@@ -136,7 +136,7 @@ class QGisMap(QtWidgets.QWidget, Ui_Form):
                     course = float(line[4])
                     time = line[5]
                     Point = [lat,lon,ele,speed,course,time]
-                    qgsPoint = QgsPoint(lon,lat)
+                    qgsPoint = QgsPointXY(lon,lat)
                     self.Polyline.append(qgsPoint)
                     self.GPXList.append(Point)
                 Counter = Counter + 1
@@ -232,13 +232,13 @@ class QGisMap(QtWidgets.QWidget, Ui_Form):
         if Point >= len(self.GPXList):
             Point = len(self.GPXList) - 1
         gpx = self.GPXList[Point]
-        lat = gpx[0]
-        lon = gpx[1]
+        lat = round(gpx[0],7)
+        lon = round(gpx[1],7)
         ele = gpx[2]
         speed = gpx[3]
         course = gpx[4]
         time = gpx[5]
-        Point = QgsPoint()
+        Point = QgsPointXY()
         Point.set(lon, lat)
         canvas = self.Main.iface.mapCanvas()
         crsSrc = QgsCoordinateReferenceSystem(4326)    # .gpx is in WGS 84
@@ -302,7 +302,7 @@ class QGisMap(QtWidgets.QWidget, Ui_Form):
             self.player.play()
             
     def findNearestPointInRecording(self, x,y):
-        ClickPt = QgsPoint(x,y)
+        ClickPt = QgsPointXY(x,y)
         Low =  ClickPt.sqrDist(self.Polyline[0])
         NearPoint = 0
         Counter = 0
@@ -326,7 +326,7 @@ class QGisMap(QtWidgets.QWidget, Ui_Form):
                  
     def AddPoint(self,x,y):
         self.Main.iface.mapCanvas().unsetMapTool(self.AddPointMapTool)
-        Point = QgsPoint(x,y)
+        Point = QgsPointXY(x,y)
         pos = self.player.position()
         if self.player.state() == QMediaPlayer.PlayingState:
             self.player.pause()
@@ -429,11 +429,11 @@ class QGisMap(QtWidgets.QWidget, Ui_Form):
                         self.progressBar.setValue(int(progessBarValue))
                         latitude1,longitude1 = float(self.GPXList[i][0]) ,float(self.GPXList[i][1])
                         latitude2,longitude2 = float(self.GPXList[i+1][0]) ,float(self.GPXList[i+1][1])
-                        lonUTM1, latUTM1,quotainutile = self.transform_wgs84_to_utm(float(self.GPXList[i][1]) , float(self.GPXList[i][0]))
                         ele1 = float(self.GPXList[i][2])
-                        lonUTM2, latUTM2,quotainutile = self.transform_wgs84_to_utm(float(self.GPXList[i+1][1]) , float(self.GPXList[i+1][0]))
                         ele2 = float(self.GPXList[i+1][2])
-                        DistanceBetweenPoint = Geodesic.WGS84.Inverse(latitude1, longitude1, latitude2, longitude2)['s12']                      
+                        Calculus = Geodesic.WGS84.Inverse(latitude1, longitude1, latitude2, longitude2)
+                        DistanceBetweenPoint = Calculus['s12']    
+                        Azimuth =   Calculus['azi2']                 
                         SpeedMeterSecond = DistanceBetweenPoint             #GPS refresh rate is actually 1, change parameter for different rates
                        # Time = 1                                            
                         if RemainToUseMeterTotal == 0:
@@ -447,8 +447,12 @@ class QGisMap(QtWidgets.QWidget, Ui_Form):
                                     os.system(ffmpeg+ ' -ss '+ str(i + decimalSecondToAdd) +
                                               ' -i '+ str(self.videoFile) + ' -frames:v 1 ' + Directory + '_sec_' + str(i) + str(decimalSecondToAdd)[1:4] +'.png')
                                     
-                                X = lonUTM1 + decimalSecondToAdd*(lonUTM2 - lonUTM1)
-                                Y = latUTM1 + decimalSecondToAdd*(latUTM2 - latUTM1)
+                                
+                                
+                                
+                                
+                                CalculusDirect = Geodesic.WGS84.Direct(latitude1, longitude1, Azimuth,decimalSecondToAdd* SpeedMeterSecond) 
+                                X,Y,quotainutile = self.transform_wgs84_to_utm(CalculusDirect['lon2'],CalculusDirect['lat2'] )  
                                 Z = ele1 + decimalSecondToAdd*(ele2 - ele1)
                                 txtGPSFile.write(str(Directory.split('/')[-1]) + '_sec_'  + str(i) + str(decimalSecondToAdd)[1:4]+'.png,' + ' ' + str(X) + ', ' + str(Y) + ', ' + str(Z) + '\n')
                                 while RemainToUseMeter > meters:
@@ -462,8 +466,8 @@ class QGisMap(QtWidgets.QWidget, Ui_Form):
                                         os.system(ffmpeg+ ' -ss '+ str(i + decimalSecondToAdd) +
                                                   ' -i '+ str(self.videoFile) + ' -frames:v 1 ' + Directory + '_sec_' + str(i) + str(decimalSecondToAdd)[1:4] +'.png')
                                     
-                                    X = lonUTM1 + decimalSecondToAdd*(lonUTM2 - lonUTM1)
-                                    Y = latUTM1 + decimalSecondToAdd*(latUTM2 - latUTM1)
+                                    CalculusDirect = Geodesic.WGS84.Direct(latitude1, longitude1, Azimuth,decimalSecondToAdd* SpeedMeterSecond) 
+                                    X,Y,quotainutile = self.transform_wgs84_to_utm(CalculusDirect['lon2'],CalculusDirect['lat2'] )  
                                     Z = ele1 + decimalSecondToAdd*(ele2 - ele1)
                                     txtGPSFile.write(str(Directory.split('/')[-1]) + '_sec_'  + str(i) + str(decimalSecondToAdd)[1:4]+'.png,' + ' ' + str(X) + ', ' + str(Y) + ', ' + str(Z) + '\n')
                                 if RemainToUseMeter == meters:
@@ -477,8 +481,8 @@ class QGisMap(QtWidgets.QWidget, Ui_Form):
                                         os.system(ffmpeg+ ' -ss '+ str(i + decimalSecondToAdd) +
                                                   ' -i '+ str(self.videoFile) + ' -frames:v 1 ' + Directory + '_sec_' + str(i) + str(decimalSecondToAdd)[1:4] +'.png')
                                     
-                                    X = lonUTM1 + decimalSecondToAdd*(lonUTM2 - lonUTM1)
-                                    Y = latUTM1 + decimalSecondToAdd*(latUTM2 - latUTM1)
+                                    CalculusDirect = Geodesic.WGS84.Direct(latitude1, longitude1, Azimuth,decimalSecondToAdd* SpeedMeterSecond) 
+                                    X,Y,quotainutile = self.transform_wgs84_to_utm(CalculusDirect['lon2'],CalculusDirect['lat2'] )  
                                     Z = ele1 + decimalSecondToAdd*(ele2 - ele1)
                                     txtGPSFile.write(str(Directory.split('/')[-1]) + '_sec_'  + str(i) + str(decimalSecondToAdd)[1:4]+'.png,' + ' ' +str(X) + ', ' + str(Y) + ', ' + str(Z) + '\n')
                                     RemainToUseMeterTotal = 0  
@@ -498,8 +502,8 @@ class QGisMap(QtWidgets.QWidget, Ui_Form):
                                     os.system(ffmpeg+ ' -ss '+ str(i + decimalSecondToAdd) +
                                               ' -i '+ str(self.videoFile) + ' -frames:v 1 ' + Directory + '_sec_' + str(i) + str(decimalSecondToAdd)[1:4] +'.png')
                                     
-                                X = lonUTM1 + decimalSecondToAdd*(lonUTM2 - lonUTM1)
-                                Y = latUTM1 + decimalSecondToAdd*(latUTM2 - latUTM1)
+                                CalculusDirect = Geodesic.WGS84.Direct(latitude1, longitude1, Azimuth,decimalSecondToAdd* SpeedMeterSecond) 
+                                X,Y,quotainutile = self.transform_wgs84_to_utm(CalculusDirect['lon2'],CalculusDirect['lat2'] )  
                                 Z = ele1 + decimalSecondToAdd*(ele2 - ele1)
                                 txtGPSFile.write(str(Directory.split('/')[-1]) + '_sec_'  + str(i) + str(decimalSecondToAdd)[1:4]+'.png,' + ' ' + str(X) + ', ' + str(Y) + ', ' + str(Z) + '\n')
                                 while RemainToUseMeter > meters:
@@ -513,8 +517,8 @@ class QGisMap(QtWidgets.QWidget, Ui_Form):
                                         os.system(ffmpeg+ ' -ss '+ str(i + decimalSecondToAdd) +
                                                   ' -i '+ str(self.videoFile) + ' -frames:v 1 ' + Directory + '_sec_' + str(i) + str(decimalSecondToAdd)[1:4] +'.png')
                 
-                                    X = lonUTM1 + decimalSecondToAdd*(lonUTM2 - lonUTM1)
-                                    Y = latUTM1 + decimalSecondToAdd*(latUTM2 - latUTM1)
+                                    CalculusDirect = Geodesic.WGS84.Direct(latitude1, longitude1, Azimuth,decimalSecondToAdd* SpeedMeterSecond) 
+                                    X,Y,quotainutile = self.transform_wgs84_to_utm(CalculusDirect['lon2'],CalculusDirect['lat2'] )  
                                     Z = ele1 + decimalSecondToAdd*(ele2 - ele1)
                                     txtGPSFile.write(str(Directory.split('/')[-1]) + '_sec_'  + str(i) + str(decimalSecondToAdd)[1:4]+'.png,' + ' ' + str(X) + ', ' + str(Y) + ', ' + str(Z) + '\n')
                                 if RemainToUseMeter == meters:
@@ -528,8 +532,8 @@ class QGisMap(QtWidgets.QWidget, Ui_Form):
                                         os.system(ffmpeg+ ' -ss '+ str(i + decimalSecondToAdd) +
                                                   ' -i '+ str(self.videoFile) + ' -frames:v 1 ' + Directory + '_sec_' + str(i) + str(decimalSecondToAdd)[1:4] +'.png')
                                     
-                                    X = lonUTM1 + decimalSecondToAdd*(lonUTM2 - lonUTM1)
-                                    Y = latUTM1 + decimalSecondToAdd*(latUTM2 - latUTM1)
+                                    CalculusDirect = Geodesic.WGS84.Direct(latitude1, longitude1, Azimuth,decimalSecondToAdd* SpeedMeterSecond) 
+                                    X,Y,quotainutile = self.transform_wgs84_to_utm(CalculusDirect['lon2'],CalculusDirect['lat2'] )  
                                     Z = ele1 + decimalSecondToAdd*(ele2 - ele1)
                                     txtGPSFile.write(str(Directory.split('/')[-1]) + '_sec_'  + str(i) + str(decimalSecondToAdd)[1:4]+'.png,' + ' ' + str(X) + ', ' + str(Y) + ', ' + str(Z) + '\n')
                                     RemainToUseMeterTotal = 0
@@ -552,7 +556,7 @@ class QGisMap(QtWidgets.QWidget, Ui_Form):
         xform = QgsCoordinateTransform(crsSrc, crsDest)
         latitude,longitude = self.Polyline[self.ExtractFromA].y(), self.Polyline[self.ExtractFromA].x()
         self.ExtractAVertex = QgsVertexMarker(canvas)
-        self.ExtractAVertex.setCenter(xform.transform(QgsPoint(longitude, latitude)))
+        self.ExtractAVertex.setCenter(xform.transform(QgsPointXY(longitude, latitude)))
         self.ExtractAVertex.setColor(QColor(0,255,0))
         self.ExtractAVertex.setIconSize(10)
         self.ExtractAVertex.setIconType(QgsVertexMarker.ICON_X)
@@ -576,7 +580,7 @@ class QGisMap(QtWidgets.QWidget, Ui_Form):
                 xform = QgsCoordinateTransform(crsSrc, crsDest)   
                 latitude,longitude = self.Polyline[self.ExtractToB].y(), self.Polyline[self.ExtractToB].x()
                 self.ExtractBVertex = QgsVertexMarker(canvas)
-                self.ExtractBVertex.setCenter(xform.transform(QgsPoint(longitude, latitude)))
+                self.ExtractBVertex.setCenter(xform.transform(QgsPointXY(longitude, latitude)))
                 self.ExtractBVertex.setColor(QColor(255,0,0))
                 self.ExtractBVertex.setIconSize(10)
                 self.ExtractBVertex.setIconType(QgsVertexMarker.ICON_X)
