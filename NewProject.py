@@ -156,7 +156,7 @@ class NewProject(QtWidgets.QWidget, Ui_NewProject):
                     Course += 360
                 Ele = x[1][2]
                 Time = x[1][3]
-                Counter = Counter + 1   
+                Counter = Counter + 1  
             outputFile.write(str(ActualLatitude)+' '+str(ActualLongitude)+' '+str(Ele)+' '+str(Speed)+' '+str(Course)+' '+str(Time)+'\n')    
         outputFile.close() 
         self.Main.LoadProjFromNew(self.projectfile)
@@ -196,6 +196,7 @@ class NewProject(QtWidgets.QWidget, Ui_NewProject):
         GPXList = []
         Error = 0
         GpxProgressiveNumber = 0
+        Timestamp = 'Segnaposto'
         for name in track:
             dict = {'Lat': 0, 'Lon': 0, 'Ele': 0, 'Time':0}
 
@@ -210,32 +211,49 @@ class NewProject(QtWidgets.QWidget, Ui_NewProject):
                 elif x.find('<ele>') == 0:
                     dict['Ele'] = float(x[5:-6])   
                 elif x.find('<time>') == 0:
+                    
                     try:
+                        
                         gpxtime = time.strftime('%Y-%m-%dT%H:%M:%S.%fZ',time.strptime(x[6:-7], '%Y-%m-%dT%H:%M:%S.%fZ'))
                         dict['Time']= x[6:-7]
+                        
                     except ValueError:
                         try:
                             gpxtime = time.strftime('%Y-%m-%dT%H:%M:%SZ',time.strptime(x[6:-7],'%Y-%m-%dT%H:%M:%SZ'))
                             dict['Time']= x[6:-7]
+                            
                         except ValueError:
                             try:
-                                gpxtime = time.strftime('%Y-%m-%dT%H.%M.%S',time.strptime(x[6:-7],'%Y-%m-%dT%H.%M.%S')) 
-                                dict['Time']= x[6:-7]               
+                                gpxtime = time.strftime('%Y-%m-%dT%H:%M:%S',time.strptime(x[6:-7],'%Y-%m-%dT%H:%M:%S'))
+                                dict['Time']= x[6:-7]
                             except ValueError:
                                 try:
-                                    gpxtime = time.strftime('%Y-%m-%dT%H.%M.%S',time.strptime(x[6:-13],'%Y-%m-%dT%H.%M.%S'))
-                                    dict['Time']= x[6:-13] 
+                                    gpxtime = time.strftime('%Y-%m-%dT%H.%M.%S',time.strptime(x[6:-7],'%Y-%m-%dT%H.%M.%S')) 
+                                    dict['Time']= x[6:-7]
+                                             
                                 except ValueError:
                                     try:
-                                        gpxtime = time.strftime('%Y-%m-%dT%H.%M.%S',time.strptime(x[6:-13],'%Y-%m-%dT%H:%M:%S'))
-                                        dict['Time']= x[6:-13]
+                                        gpxtime = time.strftime('%Y-%m-%dT%H.%M.%S',time.strptime(x[6:-13],'%Y-%m-%dT%H.%M.%S'))
+                                        dict['Time']= x[6:-13] 
+                                 
                                     except ValueError:
-                                        Error = 1
-                                        FormatoErrore = str(x)
-            Point = [dict['Lat'],dict['Lon'],dict['Ele'],dict['Time']]
-            self.comboBox.addItem(str(GpxProgressiveNumber) + '-'+ gpxtime )    
-            GPXList.append([GpxProgressiveNumber,Point])
-            GpxProgressiveNumber = GpxProgressiveNumber + 1   
+                                        try:
+                                            gpxtime = time.strftime('%Y-%m-%dT%H.%M.%S',time.strptime(x[6:-13],'%Y-%m-%dT%H:%M:%S'))
+                                            dict['Time']= x[6:-13]
+                                           
+                                        except ValueError:
+                                            Error = 1
+                                            FormatoErrore = str(x)
+            
+            if dict['Time'] != Timestamp:               
+                Point = [dict['Lat'],dict['Lon'],dict['Ele'],dict['Time']]
+                self.comboBox.addItem(str(GpxProgressiveNumber) + '-'+gpxtime )    
+                GPXList.append([GpxProgressiveNumber,Point])
+                GpxProgressiveNumber = GpxProgressiveNumber + 1
+                Timestamp = dict['Time'] 
+            else:
+                Timestamp = dict['Time']
+                
         if Error == 0:
             self.GPXList = GPXList
         else:
@@ -246,7 +264,6 @@ class NewProject(QtWidgets.QWidget, Ui_NewProject):
         fps = self.getVideoDetails(str(videofile))
         self.RealFps = float(fps)
         self.fps = (1 / self.RealFps )*1000
-        print(str(self.videofile))
         url = QUrl.fromLocalFile(str(self.videofile))
         mc = QMediaContent(url)
         self.player.setMedia(mc)

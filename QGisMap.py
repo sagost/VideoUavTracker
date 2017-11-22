@@ -82,7 +82,7 @@ class QGisMap(QtWidgets.QWidget, Ui_Form):
                                 self.DB = DB
                             break            
             self.pushButton_3.setCheckable(True)
-            self.EnableMapTool = None
+            self.EnableMapTool = False
             self.ExtractTool = 0
             self.dockWidget_4.hide()
             self.GPXList = []
@@ -136,7 +136,7 @@ class QGisMap(QtWidgets.QWidget, Ui_Form):
                     course = float(line[4])
                     time = line[5]
                     Point = [lat,lon,ele,speed,course,time]
-                    qgsPoint = QgsPointXY(lon,lat)
+                    qgsPoint = QgsPoint(lon,lat)
                     self.Polyline.append(qgsPoint)
                     self.GPXList.append(Point)
                 Counter = Counter + 1
@@ -172,7 +172,8 @@ class QGisMap(QtWidgets.QWidget, Ui_Form):
         self.player.stateChanged.connect(self.mediaStateChanged)
         self.player.positionChanged.connect(self.positionChanged)
         self.pushButton_3.clicked.connect(self.MapTool)
-        self.skiptracktool = SkipTrackTool( self.Main.iface.mapCanvas(),self.GpsLayer , self)   
+        self.skiptracktool = SkipTrackTool( self.Main.iface.mapCanvas(),self.GpsLayer , self)
+
     def AddPointTool(self):
         self.Main.iface.mapCanvas().setMapTool(self.AddPointMapTool) 
              
@@ -302,12 +303,12 @@ class QGisMap(QtWidgets.QWidget, Ui_Form):
             self.player.play()
             
     def findNearestPointInRecording(self, x,y):
-        ClickPt = QgsPointXY(x,y)
-        Low =  ClickPt.sqrDist(self.Polyline[0])
+        ClickPt = QgsPoint(x,y)
+        Low =  ClickPt.distanceSquared(self.Polyline[0])
         NearPoint = 0
         Counter = 0
         for Point in self.Polyline:
-            dist = ClickPt.sqrDist(Point)
+            dist = ClickPt.distanceSquared(Point)
             if dist < Low:
                 Low = dist
                 NearPoint = Counter

@@ -44,7 +44,7 @@ class Ui_Form(object):
         Form.setObjectName("Form")
         Form.resize(706, 493)
         icon = QtGui.QIcon()
-        icon.addPixmap(QtGui.QPixmap(":/plugins/VideoGis/icon.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        icon.addPixmap(QtGui.QPixmap(":/plugins/Video_UAV_Tracker/icon.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         Form.setWindowIcon(icon)
         self.verticalLayout_3 = QtWidgets.QVBoxLayout(Form)
         self.verticalLayout_3.setObjectName("verticalLayout_3")
@@ -65,7 +65,7 @@ class Ui_Form(object):
         self.horizontalLayout.addWidget(self.pushButton_3)
         self.toolButton_6 = QtWidgets.QToolButton(Form)
         icon2 = QtGui.QIcon()
-        icon2.addPixmap(QtGui.QPixmap(":/plugins/VideoGis/iconNewTabEditorConsole.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        icon2.addPixmap(QtGui.QPixmap(":/plugins/Video_UAV_Tracker/iconNewTabEditorConsole.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         self.toolButton_6.setIcon(icon2)
         self.toolButton_6.setObjectName("toolButton_6")
         self.horizontalLayout.addWidget(self.toolButton_6)
@@ -205,7 +205,7 @@ class Ui_Form(object):
 
     def retranslateUi(self, Form):
         _translate = QtCore.QCoreApplication.translate
-        Form.setWindowTitle(_translate("Form", "VideoGis - Player"))
+        Form.setWindowTitle(_translate("Form", "Video UAV Tracker - Player"))
         self.pushButton_3.setToolTip(_translate("Form", "<html><head/><body><p>Move along Video directly clicking on gps track</p></body></html>"))
         self.pushButton_3.setText(_translate("Form", "MapTool   "))
         self.toolButton_6.setToolTip(_translate("Form", "<html><head/><body><p>Add point</p></body></html>"))

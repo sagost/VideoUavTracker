@@ -46,7 +46,7 @@ class Ui_NewProject(object):
         NewProject.setObjectName("NewProject")
         NewProject.resize(736, 625)
         icon = QtGui.QIcon()
-        icon.addPixmap(QtGui.QPixmap(":/plugins/VideoGis/icon.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        icon.addPixmap(QtGui.QPixmap(":/plugins/Video_UAV_Tracker/icon.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         NewProject.setWindowIcon(icon)
         self.gridLayout_2 = QtWidgets.QGridLayout(NewProject)
         self.gridLayout_2.setObjectName("gridLayout_2")
@@ -97,7 +97,7 @@ class Ui_NewProject(object):
         self.gridLayout.addWidget(self.pushButton_2, 3, 12, 1, 1)
         self.toolButton_3 = QtWidgets.QToolButton(NewProject)
         icon1 = QtGui.QIcon()
-        icon1.addPixmap(QtGui.QPixmap(":/plugins/VideoGis/mIconFormSelect.svg"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        icon1.addPixmap(QtGui.QPixmap(":/plugins/Video_UAV_Tracker/mIconFormSelect.svg"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         self.toolButton_3.setIcon(icon1)
         self.toolButton_3.setObjectName("toolButton_3")
         self.gridLayout.addWidget(self.toolButton_3, 3, 11, 1, 1)
@@ -137,7 +137,7 @@ class Ui_NewProject(object):
 
     def retranslateUi(self, NewProject):
         _translate = QtCore.QCoreApplication.translate
-        NewProject.setWindowTitle(_translate("NewProject", "VideoGis - New Project"))
+        NewProject.setWindowTitle(_translate("NewProject", "Video UAV Tracker - New Project"))
         self.replayPlay_pushButton.setText(_translate("NewProject", "Play/Pause"))
         self.replayPosition_label.setText(_translate("NewProject", "-:- / -:-"))
         self.pushButton_2.setToolTip(_translate("NewProject", "<html><head/><body><p>Synchronize actual video frame with selected GPS time</p></body></html>"))

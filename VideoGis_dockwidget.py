@@ -82,7 +82,7 @@ class VideoGisDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
         self.projectfile = None
         self.pushButton_2.setEnabled(False)
         self.lineEdit_2.clear()
-        projectfile, _ = QFileDialog.getSaveFileName(caption = 'Save Project file', filter = "VideoGis Prj (*.vgp)")
+        projectfile, _ = QFileDialog.getSaveFileName(caption = 'Save Project file', filter = "Video UAV Tracker Prj (*.vgp)")
         if projectfile:
             self.NewProjectWindow = NewProject(projectfile,self)
             #self.NewProjectWindow.setWindowModality(2)
@@ -102,7 +102,7 @@ class VideoGisDockWidget(QtWidgets.QDockWidget, FORM_CLASS):
         
         self.pushButton_2.setEnabled(False)
         self.lineEdit_2.clear()
-        self.projectfile, _ = QFileDialog.getOpenFileName(caption = "Select VideoGis Prj",filter = "VideoGis Prj (*.vgp)")
+        self.projectfile, _ = QFileDialog.getOpenFileName(caption = "Select Video UAV Tracker Prj",filter = "Video UAV Tracker Prj (*.vgp)")
         if self.projectfile != '':
             with open(self.projectfile,'r') as File:
                 for line in File:

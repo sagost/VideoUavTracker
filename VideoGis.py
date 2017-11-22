@@ -79,10 +79,10 @@ class VideoGis:
 
         # Declare instance attributes
         self.actions = []
-        self.menu = self.tr(u'&VideoGis')
+        self.menu = self.tr(u'&Video UAV Tracker')
         # TODO: We are going to let the user set this up in a future iteration
-        self.toolbar = self.iface.addToolBar(u'VideoGis')
-        self.toolbar.setObjectName(u'VideoGis')
+        self.toolbar = self.iface.addToolBar(u'Video_UAV_Tracker')
+        self.toolbar.setObjectName(u'Video_UAV_Tracker')
 
         #print "** INITIALIZING VideoGis"
 
@@ -103,7 +103,7 @@ class VideoGis:
         :rtype: QString
         """
         # noinspection PyTypeChecker,PyArgumentList,PyCallByClass
-        return QCoreApplication.translate('VideoGis', message)
+        return QCoreApplication.translate('Video_UAV_Tracker', message)
 
 
     def add_action(
